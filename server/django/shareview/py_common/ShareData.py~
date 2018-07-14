@@ -1,0 +1,171 @@
+#!/usr/bin/python
+#-*- coding: utf-8 -*-
+# Author: HaoQJ
+# Date: 2018-05-09
+################################
+
+from django.shortcuts import render
+import json
+import tushare as ts
+
+
+def To_Json(data):
+    data = json.loads(data.to_json(orient="records"))
+    return data
+
+#交易数据
+class ExchangeData:
+    def __init__(self):
+        pass
+    # 历史数据
+    def get_k_data(self, code, ktype, start, end):
+        tsdata = ts.get_k_data(
+            code = "%s" % code,
+            ktype = "%s" % ktype,
+            start = "%s" % start,
+            end = "%s" % end,
+        )
+        jsdata = To_Json(tsdata)
+        return jsdata
+    # 复权数据
+    def get_h_data(self, code, start, end):
+        tsdata = ts.get_h_data(
+            code = "%s" % code,
+            start = "%s" % start,
+            end = "%s" % end,
+        )
+        jsdata = To_Json(tsdata)
+        return jsdata
+    # 实时行情
+    def get_today_all(self):
+        tsdata = ts.get_today_all()
+        jsdata = To_Json(tsdata)
+        return jsdata
+    # 历史分笔
+    def get_tick_data(self, code, date):
+        tsdata = ts.get_tick_data(
+            code = "%s" % code,
+            date = "%s" % date,
+        )
+        jsdata = To_Json(tsdata)
+        return jsdata
+    def get_name(self, code):
+        tsdata = ts.get_realtime_quotes(code)
+        jsdata = To_Json(tsdata)
+        return jsdata[0]['name']
+
+# 投资参考数据
+class InvestRefData:
+    def __init__(self):
+        pass
+    # 分配预案
+    def profit_data(self, year, topnum):
+        tsdata = ts.profit_data(
+            year = "%s" % year,
+            top = topnum
+        )
+        jsdata = To_Json(tsdata)
+        return jsdata
+    # 业绩报告
+    def forecast_data(self, year, quarter):
+        tsdata = ts.forecast_data(
+            year = year,
+            quarter = quarter,
+        )
+        jsdata = To_Json(tsdata)
+        return jsdata
+    # 基金持股
+    def fund_holdings(self, yaer, quarter):
+        tsdata = ts.fund_holdings(
+            year = year,
+            quarter = quarter,
+        )
+        jsdata = To_Json(tsdata)
+        return jsdata
+    # 新股数据
+    def new_stocks(self):
+        tsdata = ts.new_stocks()
+        jsdata = To_Json(tsdata)
+        return jsdata
+
+# 股票分类数据
+class StockClass:
+    def __init__(self):
+        pass
+    # 行业分类
+    def get_industry_classified(self):
+        tsdata = ts.get_industry_classified()
+        jsdata = To_Json(tsdata)
+        return jsdata
+    # 概念分类
+    def get_concept_classified(self):
+        tsdata = ts.get_concept_classified()
+        jsdata = To_Json(tsdata)
+        return jsdata
+    # 地域分类
+    def get_area_classified(self):
+        tsdata = ts.get_area_classified()
+        jsdata = To_Json(tsdata)
+        return jsdata
+
+# 基本面板数据
+class BasicsPanelData:
+    def __init__(self):
+        pass
+    # 股票列表
+    def get_stock_basics(self):
+        tsdata = ts.get_stock_basics()
+        jsdata = To_Json(tsdata)
+        return jsdata
+    # 业绩报告(主表)
+    def get_report_data(self, year, quarter):
+        tsdata = ts.get_report_data(
+            year = year,
+            quarter = quarter,
+        )
+        jsdata = To_Json(tsdata)
+        return jsdata
+    # 盈利能力
+    def get_profit_data(self, year, quarter):
+        tsdata = ts.get_profit_data(
+            year = year,
+            quarter = quarter,
+        )
+        jsdata = To_Json(tsdata)
+        return jsdata
+    # 运营能力
+    def get_operation_data(self, year, quarter):
+        tsdata = ts.get_operation_data(
+            year = year,
+            quarter = quarter,
+        )
+        jsdata = To_Json(tsdata)
+        return jsdata
+    # 成长能力
+    def get_growth_data(self, year, quarter):
+        tsdata = ts.get_growth_data(
+            year = year,
+            quarter = quarter,
+        )
+        jsdata = To_Json(tsdata)
+        return jsdata
+    # 偿债能力
+    def get_debtpaying_data(self, year, quarter):
+        tsdata = ts.get_debtpaying_data(
+            year = year,
+            quarter = quarter,
+        )
+        jsdata = To_Json(tsdata)
+        return jsdata
+    # 现金流量
+    def get_cashflow_data(self, year, quarter):
+        tsdata = ts.get_cashflow_data(
+            year = year,
+            quarter = quarter,
+        )
+        jsdata = To_Json(tsdata)
+        return jsdata
+exchange = ExchangeData()
+investref = InvestRefData()
+stock = StockClass()
+basicspanel = BasicsPanelData()

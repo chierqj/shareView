@@ -1,0 +1,127 @@
+#!/usr/bin/python
+#-*- coding: utf-8 -*-
+# Author: HaoQJ
+# Date: 2018-05-23
+################################
+
+from django.shortcuts import render
+from django.http import HttpResponse
+from py_common import jsonp
+from py_common.ShareData import *
+from pymongo import MongoClient
+from bson.objectid import ObjectId
+import tushare as ts
+import json, datetime
+import logging
+logger = logging.getLogger(__name__)
+conn = MongoClient('127.0.0.1', 27017)
+
+# Create your views here.
+def data_info_all(req):
+    db = conn.ShareView
+    my_set = db.ShareInfo
+    res_data = []
+    try:
+        for it in my_set.find():
+            res_data.append({
+                'key': str(it['_id']),
+                'sharename': it['sharename'],
+                'sharecode': it['sharecode'],
+                'startdate': it['startdate'],
+                'enddate': it['enddate']
+            })
+        return jsonp.generate_http_response(req, json.dumps(res_data))
+    except:
+        return jsonp.generate_http_response(req, "404")
+
+def data_add(req):
+    sharecode = req.GET.get('sharecode')
+    startdate = req.GET.get('startdate')
+    enddate = req.GET.get('enddate')
+    sharename = exchange.get_name(sharecode)
+  
+    logger.info(sharecode, startdate, enddate)
+
+    insert_set1 = {
+        'sharename': sharename,
+        'sharecode': sharecode,
+        'startdate': startdate,
+        'enddate': enddate
+    }
+    insert_set2 = exchange.get_k_data(
+        code = sharecode, 
+        ktype = 'D', 
+        start = startdate, 
+        end = enddate
+    )
+    logger.info(insert_set1)
+    logger.info(insert_set2)
+
+    db = conn.ShareView
+    my_set1 = db.ShareInfo
+    my_set2 = db.ShareContent
+
+    if my_set1.find({'sharecode': sharecode}).count() > 0:
+        return jsonp.generate_http_response(req, "1")
+
+    try:
+        my_set1.insert(insert_set1)
+        if len(insert_set2) == 0:
+            return jsonp.generate_http_response(req, "0")
+        my_set2.insert(insert_set2)
+        return jsonp.generate_http_response(req, "200")
+    except:
+        return jsonp.generate_http_response(req, "404")
+
+def data_show(req):
+    db = conn.ShareView
+    my_set1 = db.ShareInfo
+    my_set2 = db.ShareContent
+    
+    _id = req.GET.get('_id')
+    cur = my_set1.find({"_id": ObjectId(_id)})
+    code = 'null'
+    try:
+        for it in cur:
+            code = it['sharecode']
+    except:
+        logger.error("code serch error!")
+    logger.info(code)
+    try:
+        res_data = []
+        for it in my_set2.find({'code': code}):
+            res_data.append({
+                'key': str(it['_id']),
+                'date': it['date'],
+                'open': it['open'],
+                'close': it['close'],
+                'high': it['high'],
+                'low': it['low'],
+                'volume': it['volume'],
+                'code': it['code']
+            })
+        return jsonp.generate_http_response(req, json.dumps(res_data))
+    except:
+        return jsonp.generate_http_response(req, '404')
+
+
+def data_delete(req):
+    db = conn.ShareView
+    my_set1 = db.ShareInfo
+    my_set2 = db.ShareContent
+    
+    _id = req.GET.get('_id')
+    cur = my_set1.find({"_id": ObjectId(_id)})
+    code = 'null'
+    try:
+        for it in cur:
+            code = it['sharecode']
+    except:
+        logger.error("code serch error!")
+    try:
+        my_set1.remove({"_id": ObjectId(_id)})
+        my_set2.remove({'code': code})
+        return jsonp.generate_http_response(req, "200")
+    except:
+        logger.error("user delete error!")
+        return jsonp.generate_http_response(req, "404")

@@ -1,0 +1,40 @@
+#!/usr/bin/python
+#-*- coding: utf-8 -*-
+# Author: HaoQJ
+# Date: 2018-05-11
+################################
+
+from django.http import HttpResponse, Http404
+from django.shortcuts import render
+from py_common import jsonp
+from py_common.ShareData import *
+import tushare as ts
+import json, datetime
+
+import logging
+logger = logging.getLogger(__name__)
+# Create your views here.
+def getAllCode(req):
+    tsdata = ts.get_sz50s()
+    jsdata = json.loads(tsdata.to_json(orient="records"))
+    resdata = []
+    resdict = {}
+    for it in jsdata:
+        code = it["code"]
+        if code not in resdict:
+            resdata.append({
+                "code": code,
+                "name": it["name"]
+            })
+            resdict[code] = True
+    return jsonp.generate_http_response(req, json.dumps(resdata))
+def get_exchange_history(req):
+    code = req.GET.get('codevalue')
+    ktype = req.GET.get('ktypevalue')
+    start = req.GET.get('startdate')
+    end = req.GET.get('enddate')
+    try:
+        data = exchange.get_k_data(code, ktype, start, end)
+    except:
+        raise Http404('Server error')
+    return jsonp.generate_http_response(req, json.dumps(data))
